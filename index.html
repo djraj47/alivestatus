@@ -232,8 +232,8 @@
                 <tfoot>
                     <tr>
                         <td colspan="7">
-                            All changes auto-save instantly. Overlay reads <code>scoreboardData</code> and
-                            <code>matchNumber</code> from localStorage.
+                            All changes auto-save instantly. Overlay updates live from this page via
+                            <code>BroadcastChannel("scoreboardChannel")</code>.
                         </td>
                     </tr>
                 </tfoot>
@@ -256,6 +256,14 @@
         const btnNext = document.getElementById("btn-next-match");
         const btnReset = document.getElementById("btn-hard-reset");
 
+        // ====== LIVE CHANNEL TO OVERLAY ======
+        const channel = new BroadcastChannel("scoreboardChannel");
+
+        function broadcastScoreboard() {
+            // Send current data to overlay
+            channel.postMessage(data);
+        }
+
         function loadData() {
             let stored = JSON.parse(localStorage.getItem("scoreboardData") || "null");
             if (!stored || !Array.isArray(stored) || stored.length === 0) {
@@ -273,6 +281,8 @@
         function saveData() {
             localStorage.setItem("scoreboardData", JSON.stringify(data));
             localStorage.setItem("scoreboard_updated_at", Date.now().toString());
+            // Also push live update to overlay
+            broadcastScoreboard();
         }
 
         function loadMatchNumber() {
@@ -451,6 +461,8 @@
 
         /* initial render */
         renderTable();
+        // Also send initial state to overlay when admin opens
+        broadcastScoreboard();
     </script>
 </body>
 
