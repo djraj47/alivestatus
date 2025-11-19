@@ -20,7 +20,7 @@
 
         body {
             background: #00FF00;
-            /* GREEN BACKGROUND */
+            /* GREEN BACKGROUND FOR CHROMA */
             height: 100vh;
             width: 100vw;
             position: relative;
@@ -496,7 +496,19 @@
         const finalViewEl = document.getElementById("final-view");
         const finalCardsConta = document.getElementById("final-cards");
 
-        // ==== ELIM DETECTION (uses previous data snapshot) ====
+        // --------- helpers to get data from localStorage (fallback) ----------
+        function loadDataFromStorage() {
+            const raw = JSON.parse(localStorage.getItem("scoreboardData") || "[]");
+            if (!Array.isArray(raw) || raw.length === 0) return [];
+            return raw.map((row, i) => ({
+                team: row.team || `TEAM${i + 1}`,
+                alive: typeof row.alive === "number" ? row.alive : 4,
+                total: typeof row.total === "number" ? row.total : 0,
+                match: typeof row.match === "number" ? row.match : 0
+            }));
+        }
+
+        // --------- elim detection ----------
         function detectElims(sortedData) {
             if (!prevData) {
                 prevData = sortedData.map(r => ({ ...r }));
@@ -543,8 +555,7 @@
             }, 4000);
         }
 
-        // ==== RENDER FUNCTIONS (use data passed from admin) ====
-
+        // --------- render functions ----------
         function renderNormal(data) {
             const isFirstMatch = data.every(t => t.total === 0);
             rowsContainer.innerHTML = "";
@@ -639,11 +650,10 @@
             });
         }
 
-        // Main render called whenever admin sends new data
-        function renderFromAdmin(rawData) {
+        // main render entry – called by both BC and localStorage
+        function renderFromData(rawData) {
             if (!Array.isArray(rawData)) return;
 
-            // Normalize data
             let data = rawData.map((row, i) => ({
                 team: row.team || `TEAM${i + 1}`,
                 alive: typeof row.alive === "number" ? row.alive : 4,
@@ -651,7 +661,7 @@
                 match: typeof row.match === "number" ? row.match : 0
             }));
 
-            // Sort for placement
+            // sort by total+match then alive
             data.sort((a, b) => {
                 const pa = a.total + a.match;
                 const pb = b.total + b.match;
@@ -660,7 +670,6 @@
                 return 0;
             });
 
-            // Detect eliminations based on previous snapshot
             detectElims(data);
 
             const aliveTeams = data.filter(t => t.alive > 0);
@@ -676,23 +685,36 @@
             }
         }
 
-        // ======== LISTEN LIVE FROM ADMIN PAGE (BroadcastChannel) ========
+        // --------- LIVE: BroadcastChannel from admin ----------
+        try {
+            const channel = new BroadcastChannel("scoreboardChannel");
+            channel.onmessage = (event) => {
+                renderFromData(event.data);
+            };
+        } catch (e) {
+            // If BroadcastChannel not supported, we just rely on localStorage
+        }
 
-        const channel = new BroadcastChannel("scoreboardChannel");
+        // --------- LIVE: localStorage fallback (for your existing admin) ----------
+        // On load
+        const initial = loadDataFromStorage();
+        if (initial.length > 0) {
+            renderFromData(initial);
+        }
 
-        channel.onmessage = (event) => {
-            // event.data should be an array of team objects from admin
-            renderFromAdmin(event.data);
-        };
+        // When localStorage changes (if same origin)
+        window.addEventListener("storage", (e) => {
+            if (e.key === "scoreboardData") {
+                const d = loadDataFromStorage();
+                renderFromData(d);
+            }
+        });
 
-        // Optional: show some default empty data before admin sends anything
-        const defaultData = [
-            { team: "TEAM1", alive: 4, total: 0, match: 0 },
-            { team: "TEAM2", alive: 4, total: 0, match: 0 },
-            { team: "TEAM3", alive: 4, total: 0, match: 0 },
-            { team: "TEAM4", alive: 4, total: 0, match: 0 }
-        ];
-        renderFromAdmin(defaultData);
+        // As an extra safety net, poll every second (handles some file/OBS quirks)
+        setInterval(() => {
+            const d = loadDataFromStorage();
+            if (d.length > 0) renderFromData(d);
+        }, 1000);
     </script>
 </body>
 
