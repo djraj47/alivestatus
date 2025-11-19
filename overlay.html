@@ -58,7 +58,6 @@
             background: #041E3A;
             padding: 0 22px;
             white-space: nowrap;
-            display: none;
             align-items: stretch;
         }
 
@@ -497,17 +496,7 @@
         const finalViewEl = document.getElementById("final-view");
         const finalCardsConta = document.getElementById("final-cards");
 
-        function loadData() {
-            const raw = JSON.parse(localStorage.getItem("scoreboardData") || "[]");
-            return raw.map((row, i) => ({
-                team: row.team || `TEAM${i + 1}`,
-                alive: typeof row.alive === "number" ? row.alive : 4,
-                total: typeof row.total === "number" ? row.total : 0,
-                match: typeof row.match === "number" ? row.match : 0
-            }));
-        }
-
-        // ELIM DETECTION WITH RANK BY ALIVE TEAMS (PLACEMENT)
+        // ==== ELIM DETECTION (uses previous data snapshot) ====
         function detectElims(sortedData) {
             if (!prevData) {
                 prevData = sortedData.map(r => ({ ...r }));
@@ -554,31 +543,7 @@
             }, 4000);
         }
 
-        function render() {
-            let data = loadData();
-
-            data.sort((a, b) => {
-                const pa = a.total + a.match;
-                const pb = b.total + b.match;
-                if (pb !== pa) return pb - pa;
-                if (b.alive !== a.alive) return b.alive - a.alive;
-                return 0;
-            });
-
-            detectElims(data);
-
-            const aliveTeams = data.filter(t => t.alive > 0);
-
-            if (aliveTeams.length > 0 && aliveTeams.length <= 4) {
-                normalViewEl.style.display = "none";
-                finalViewEl.style.display = "block";
-                renderFinalFour(aliveTeams);
-            } else {
-                normalViewEl.style.display = "block";
-                finalViewEl.style.display = "none";
-                renderNormal(data);
-            }
-        }
+        // ==== RENDER FUNCTIONS (use data passed from admin) ====
 
         function renderNormal(data) {
             const isFirstMatch = data.every(t => t.total === 0);
@@ -674,11 +639,60 @@
             });
         }
 
-        render();
-        window.addEventListener("storage", e => {
-            if (e.key === "scoreboardData") render();
-        });
-        setInterval(render, 1000);
+        // Main render called whenever admin sends new data
+        function renderFromAdmin(rawData) {
+            if (!Array.isArray(rawData)) return;
+
+            // Normalize data
+            let data = rawData.map((row, i) => ({
+                team: row.team || `TEAM${i + 1}`,
+                alive: typeof row.alive === "number" ? row.alive : 4,
+                total: typeof row.total === "number" ? row.total : 0,
+                match: typeof row.match === "number" ? row.match : 0
+            }));
+
+            // Sort for placement
+            data.sort((a, b) => {
+                const pa = a.total + a.match;
+                const pb = b.total + b.match;
+                if (pb !== pa) return pb - pa;
+                if (b.alive !== a.alive) return b.alive - a.alive;
+                return 0;
+            });
+
+            // Detect eliminations based on previous snapshot
+            detectElims(data);
+
+            const aliveTeams = data.filter(t => t.alive > 0);
+
+            if (aliveTeams.length > 0 && aliveTeams.length <= 4) {
+                normalViewEl.style.display = "none";
+                finalViewEl.style.display = "block";
+                renderFinalFour(aliveTeams);
+            } else {
+                normalViewEl.style.display = "block";
+                finalViewEl.style.display = "none";
+                renderNormal(data);
+            }
+        }
+
+        // ======== LISTEN LIVE FROM ADMIN PAGE (BroadcastChannel) ========
+
+        const channel = new BroadcastChannel("scoreboardChannel");
+
+        channel.onmessage = (event) => {
+            // event.data should be an array of team objects from admin
+            renderFromAdmin(event.data);
+        };
+
+        // Optional: show some default empty data before admin sends anything
+        const defaultData = [
+            { team: "TEAM1", alive: 4, total: 0, match: 0 },
+            { team: "TEAM2", alive: 4, total: 0, match: 0 },
+            { team: "TEAM3", alive: 4, total: 0, match: 0 },
+            { team: "TEAM4", alive: 4, total: 0, match: 0 }
+        ];
+        renderFromAdmin(defaultData);
     </script>
 </body>
 
