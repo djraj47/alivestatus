@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Scoreboard Overlay</title>
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Boldonse&family=Limelight&family=Teko:wght@300;400;500;600;700&family=Titan+One&display=swap"
+        rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Teko", sans-serif;
+        }
+
+        body {
+            background: #00FF00;
+            /* GREEN BACKGROUND */
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* ======= RED FRAME 1920 x 1080 ======= */
+        .frame-1920x1080 {
+            position: relative;
+            width: 1920px;
+            height: 1080px;
+            border: 4px solid red;
+            box-sizing: border-box;
+            background: transparent;
+            overflow: hidden;
+        }
+
+        /* ============ ELIMINATION BANNER ============ */
+
+        #elim-banner {
+            display: none;
+            height: 64px;
+            border-radius: 6px;
+            overflow: hidden;
+            font-weight: 700;
+            position: absolute;
+            top: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6);
+            background: #041E3A;
+            padding: 0 22px;
+            white-space: nowrap;
+            display: none;
+            align-items: stretch;
+        }
+
+        #elim-snow {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: snow-fall 4s linear infinite;
+        }
+
+        .flake1 {
+            left: 10%;
+            animation-duration: 5s;
+            animation-delay: 0s;
+        }
+
+        .flake2 {
+            left: 25%;
+            animation-duration: 4.5s;
+            animation-delay: 1s;
+        }
+
+        .flake3 {
+            left: 40%;
+            animation-duration: 5.5s;
+            animation-delay: 0.5s;
+        }
+
+        .flake4 {
+            left: 60%;
+            animation-duration: 4.2s;
+            animation-delay: 1.5s;
+        }
+
+        .flake5 {
+            left: 75%;
+            animation-duration: 5.2s;
+            animation-delay: 0.8s;
+        }
+
+        .flake6 {
+            left: 90%;
+            animation-duration: 4.8s;
+            animation-delay: 1.2s;
+        }
+
+        @keyframes snow-fall {
+            0% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(70px);
+            }
+        }
+
+        .elim-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .elim-rank {
+            min-width: 60px;
+            background: #1E88E5;
+            color: #001A2A;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            font-weight: 900;
+            text-align: center;
+        }
+
+        .elim-middle {
+            flex: 1;
+            background: #0A3F79;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 14px;
+            text-align: center;
+        }
+
+        .elim-texts {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .elim-team {
+            font-size: 30px;
+            color: #E6F6FF;
+            line-height: 26px;
+            font-weight: 900;
+            text-align: center;
+        }
+
+        .elim-status {
+            font-size: 20px;
+            color: #4CC9FF;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .elim-right {
+            min-width: 90px;
+            background: #113C57;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 8px;
+            text-align: center;
+        }
+
+        .elim-k-num {
+            font-size: 32px;
+            color: #E6F6FF;
+            font-weight: 900;
+        }
+
+        .elim-k-label {
+            font-size: 16px;
+            color: #C7E3FF;
+            font-weight: 500;
+        }
+
+        /* ============ MAIN SCOREBOARD ============ */
+
+        .scoreboard {
+            width: 220px;
+            background: #041E3A;
+            overflow: hidden;
+            border-radius: 3px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+        }
+
+        #normal-view,
+        #final-view {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .scoreboard-header {
+            display: grid;
+            grid-template-columns: 100px 25px 55px 40px;
+            background: #0A3F79;
+            padding: 3px 0;
+            color: #E6F6FF;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            text-align: center;
+            font-family: "Limelight", sans-serif;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scoreboard-header::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
+            animation: shine 7s linear infinite;
+            pointer-events: none;
+        }
+
+        .score-row {
+            display: grid;
+            grid-template-columns: 100px 25px 55px 40px;
+            height: 27px;
+            border-bottom: 1px solid rgba(230, 246, 255, 0.12);
+            position: relative;
+        }
+
+        .score-row.top-team {
+            box-shadow: 0 0 14px rgba(76, 201, 255, 0.5);
+            z-index: 2;
+        }
+
+        .score-row.top-team::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
+            animation: shine 7s linear infinite;
+            pointer-events: none;
+        }
+
+        .score-row.dead .team-cell {
+            background: #233548;
+        }
+
+        .score-row.dead .team-name,
+        .score-row.dead .rank-cell,
+        .score-row.dead .pts-cell {
+            color: #9DB3C7;
+        }
+
+        .score-row.dead .alive-box,
+        .score-row.dead .alive-box.on {
+            background: #4C5866 !important;
+        }
+
+        .team-cell {
+            display: flex;
+            background: #0A3F79;
+            color: #E6F6FF;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .team-name {
+            width: 100%;
+            font-size: 22px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            white-space: nowrap;
+            margin: 0;
+            padding: 0;
+            line-height: 1;
+            height: 100%;
+            text-align: center;
+        }
+
+        .rank-cell,
+        .pts-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+            color: #E6F6FF;
+            text-align: center;
+        }
+
+        .alive-cell {
+            gap: 2px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 700;
+        }
+
+        .alive-box {
+            width: 6px;
+            height: 17px;
+            margin-bottom: 5px;
+            background: #466B89;
+        }
+
+        .alive-box.on {
+            background: #4CC9FF;
+        }
+
+        /* ============ FINAL 4 MODE ============ */
+
+        #final-view {
+            width: auto;
+            min-width: 260px;
+            display: none;
+        }
+
+        .final-card {
+            display: grid;
+            grid-template-columns: 40px 1fr;
+            height: 60px;
+            margin-bottom: 8px;
+            background: #041E3A;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
+            padding-right: 10px;
+        }
+
+        .final-left {
+            background: #06192C;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .final-bars {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 70%;
+        }
+
+        .final-bar {
+            width: 11px;
+            height: 6px;
+            background: #24425F;
+        }
+
+        .final-middle {
+            background: #0A3F79;
+            color: #E6F6FF;
+            padding-left: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .final-team {
+            font-size: 30px;
+            font-weight: 900;
+            line-height: 24px;
+            text-align: center;
+        }
+
+        .final-wwcd-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            padding-right: 4px;
+            text-align: center;
+        }
+
+        .final-wwcd-label {
+            color: #4CC9FF;
+            text-align: center;
+        }
+
+        .final-percent {
+            color: #E6F6FF;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        @keyframes shine {
+            0% {
+                left: -150%;
+            }
+
+            100% {
+                left: 150%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="frame-1920x1080">
+        <!-- ELIM BANNER -->
+        <div id="elim-banner">
+            <div id="elim-snow">
+                <div class="snowflake flake1"></div>
+                <div class="snowflake flake2"></div>
+                <div class="snowflake flake3"></div>
+                <div class="snowflake flake4"></div>
+                <div class="snowflake flake5"></div>
+                <div class="snowflake flake6"></div>
+            </div>
+
+            <div class="elim-content">
+                <div class="elim-rank" id="elim-rank">#0</div>
+                <div class="elim-middle">
+                    <div class="elim-texts">
+                        <div id="elim-team" class="elim-team">TEAM</div>
+                        <div class="elim-status">ELIMINATED</div>
+                    </div>
+                </div>
+                <div class="elim-right">
+                    <div id="elim-kills" class="elim-k-num">0</div>
+                    <div class="elim-k-label">FINISHES</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NORMAL TABLE VIEW -->
+        <div id="normal-view" class="scoreboard">
+            <div class="scoreboard-header">
+                <div>TEAM</div>
+                <div>#</div>
+                <div>ALV</div>
+                <div>PTS</div>
+            </div>
+            <div id="rows"></div>
+        </div>
+
+        <!-- FINAL 4 VIEW -->
+        <div id="final-view">
+            <div id="final-cards"></div>
+        </div>
+    </div>
+
+    <script>
+        let prevData = null;
+        let elimQueue = [];
+        let elimShowing = false;
+
+        const elimBanner = document.getElementById("elim-banner");
+        const elimRankEl = document.getElementById("elim-rank");
+        const elimTeamEl = document.getElementById("elim-team");
+        const elimKillsEl = document.getElementById("elim-kills");
+
+        const rowsContainer = document.getElementById("rows");
+        const normalViewEl = document.getElementById("normal-view");
+        const finalViewEl = document.getElementById("final-view");
+        const finalCardsConta = document.getElementById("final-cards");
+
+        function loadData() {
+            const raw = JSON.parse(localStorage.getItem("scoreboardData") || "[]");
+            return raw.map((row, i) => ({
+                team: row.team || `TEAM${i + 1}`,
+                alive: typeof row.alive === "number" ? row.alive : 4,
+                total: typeof row.total === "number" ? row.total : 0,
+                match: typeof row.match === "number" ? row.match : 0
+            }));
+        }
+
+        // ELIM DETECTION WITH RANK BY ALIVE TEAMS (PLACEMENT)
+        function detectElims(sortedData) {
+            if (!prevData) {
+                prevData = sortedData.map(r => ({ ...r }));
+                return;
+            }
+
+            const prevMap = new Map(prevData.map(r => [r.team, r]));
+            const aliveCountAfter = sortedData.filter(t => t.alive > 0).length;
+
+            sortedData.forEach((row) => {
+                const prev = prevMap.get(row.team);
+
+                if (prev && prev.alive > 0 && row.alive === 0) {
+                    const rankNumber = aliveCountAfter + 1;
+
+                    elimQueue.push({
+                        team: row.team,
+                        kills: row.match,
+                        rank: rankNumber
+                    });
+                }
+            });
+
+            prevData = sortedData.map(r => ({ ...r }));
+            showNextElim();
+        }
+
+        function showNextElim() {
+            if (elimShowing || elimQueue.length === 0) return;
+
+            const { team, kills, rank } = elimQueue.shift();
+            elimShowing = true;
+
+            elimRankEl.textContent = `#${rank}`;
+            elimTeamEl.textContent = team;
+            elimKillsEl.textContent = kills ?? 0;
+
+            elimBanner.style.display = "flex";
+
+            setTimeout(() => {
+                elimBanner.style.display = "none";
+                elimShowing = false;
+                showNextElim();
+            }, 4000);
+        }
+
+        function render() {
+            let data = loadData();
+
+            data.sort((a, b) => {
+                const pa = a.total + a.match;
+                const pb = b.total + b.match;
+                if (pb !== pa) return pb - pa;
+                if (b.alive !== a.alive) return b.alive - a.alive;
+                return 0;
+            });
+
+            detectElims(data);
+
+            const aliveTeams = data.filter(t => t.alive > 0);
+
+            if (aliveTeams.length > 0 && aliveTeams.length <= 4) {
+                normalViewEl.style.display = "none";
+                finalViewEl.style.display = "block";
+                renderFinalFour(aliveTeams);
+            } else {
+                normalViewEl.style.display = "block";
+                finalViewEl.style.display = "none";
+                renderNormal(data);
+            }
+        }
+
+        function renderNormal(data) {
+            const isFirstMatch = data.every(t => t.total === 0);
+            rowsContainer.innerHTML = "";
+
+            data.forEach((t, i) => {
+                const row = document.createElement("div");
+                row.className = "score-row" + (t.alive === 0 ? " dead" : "");
+                if (i === 0) row.classList.add("top-team");
+
+                const teamCell = document.createElement("div");
+                teamCell.className = "team-cell";
+
+                const name = document.createElement("div");
+                name.className = "team-name";
+                name.textContent = t.team;
+
+                teamCell.appendChild(name);
+
+                const rankCell = document.createElement("div");
+                rankCell.className = "rank-cell";
+                rankCell.textContent = i + 1;
+
+                const aliveCell = document.createElement("div");
+                aliveCell.className = "alive-cell";
+                for (let k = 0; k < 4; k++) {
+                    const bar = document.createElement("span");
+                    bar.className = "alive-box" + (k < t.alive ? " on" : "");
+                    aliveCell.appendChild(bar);
+                }
+
+                const ptsCell = document.createElement("div");
+                ptsCell.className = "pts-cell";
+                const totalPlusMatch = t.total + t.match;
+                ptsCell.textContent = isFirstMatch ? totalPlusMatch : `${t.total}+${t.match}`;
+
+                row.append(teamCell, rankCell, aliveCell, ptsCell);
+                rowsContainer.appendChild(row);
+            });
+        }
+
+        function renderFinalFour(aliveTeams) {
+            finalCardsConta.innerHTML = "";
+
+            aliveTeams.sort((a, b) => {
+                const pa = a.total + a.match;
+                const pb = b.total + b.match;
+                if (pb !== pa) return pb - pa;
+                if (b.alive !== a.alive) return b.alive - a.alive;
+                return 0;
+            });
+
+            const ptsArr = aliveTeams.map(t => t.total + t.match);
+            const sumPts = ptsArr.reduce((s, v) => s + v, 0);
+            const allZero = sumPts === 0;
+
+            aliveTeams.forEach(team => {
+                const card = document.createElement("div");
+                card.className = "final-card";
+
+                const left = document.createElement("div");
+                left.className = "final-left";
+                const barsWrap = document.createElement("div");
+                barsWrap.className = "final-bars";
+                for (let i = 0; i < 4; i++) {
+                    const bar = document.createElement("div");
+                    bar.className = "final-bar";
+                    barsWrap.appendChild(bar);
+                }
+                left.appendChild(barsWrap);
+
+                const mid = document.createElement("div");
+                mid.className = "final-middle";
+                const teamName = document.createElement("div");
+                teamName.className = "final-team";
+                teamName.textContent = team.team;
+
+                const wwRow = document.createElement("div");
+                wwRow.className = "final-wwcd-row";
+                const label = document.createElement("div");
+                label.className = "final-wwcd-label";
+                label.textContent = "WWCD";
+                const percent = document.createElement("div");
+                percent.className = "final-percent";
+                let p = allZero ? (100 / aliveTeams.length) : ((team.total + team.match) / sumPts * 100);
+                percent.textContent = p.toFixed(2) + "%";
+                wwRow.append(label, percent);
+
+                mid.append(teamName, wwRow);
+
+                card.append(left, mid);
+                finalCardsConta.appendChild(card);
+            });
+        }
+
+        render();
+        window.addEventListener("storage", e => {
+            if (e.key === "scoreboardData") render();
+        });
+        setInterval(render, 1000);
+    </script>
+</body>
+
+</html>
