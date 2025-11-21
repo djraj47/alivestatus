@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Live Scoreboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #020617;
+            color: #e5e7eb;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        .row {
+            padding: 10px;
+            margin: 6px 0;
+            border-bottom: 1px solid #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .row img {
+            border-radius: 4px;
+        }
+
+        .status {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>LIVE SCOREBOARD</h2>
+    <p class="status" id="status">Connecting…</p>
+    <div id="output"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const db = window.supabase.createClient(
+            "https://csabudilbmjvyhilbekw.supabase.co",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzYWJ1ZGlsYm1qdnloaWxiZWt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0OTE1MzYsImV4cCI6MjA3OTA2NzUzNn0.xUygMCObsAMNZ4OHnG4WHmqpmXnF2O-72iCKKMh---o"
+        );
+
+        const statusEl = document.getElementById("status");
+
+        async function updateView() {
+            const { data, error } = await db
+                .from("scoreboard_teams")
+                .select("*")
+                .order("position", { ascending: true });
+
+            if (error) {
+                console.error("View load error:", error);
+                statusEl.textContent = "Error: " + error.message;
+                return;
+            }
+
+            statusEl.textContent = "Live connected.";
+            const out = document.getElementById("output");
+            out.innerHTML = "";
+
+            data.forEach(row => {
+                out.innerHTML += `
+          <div class="row">
+            ${row.logo ? `<img src="${row.logo}" width="60" alt="logo">` : ""}
+            <div>
+              <div><strong>${row.position}. ${row.team}</strong> (Slot ${row.slot})</div>
+              <div>Alive: ${row.alive} | Total: ${row.total} | Match: ${row.match}</div>
+            </div>
+          </div>
+        `;
+            });
+        }
+
+        updateView();
+
+        db.channel("scoreboard_teams_live")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "scoreboard_teams" },
+                () => {
+                    updateView();
+                }
+            )
+            .subscribe((status) => {
+                if (status === "SUBSCRIBED") {
+                    statusEl.textContent = "Live connected.";
+                }
+            });
+    </script>
+</body>
+
+</html>

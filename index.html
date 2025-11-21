@@ -4,465 +4,282 @@
 <head>
     <meta charset="UTF-8" />
     <title>Scoreboard Admin</title>
-
-    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet">
-
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Teko", sans-serif;
-        }
-
         body {
-            background: #000000;
-            color: #ffffff;
-            display: flex;
-            justify-content: center;
-            padding: 8px;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #020617;
+            color: #e5e7eb;
         }
 
-        .admin-wrapper {
-            width: 820px;
-            /* a bit smaller overall */
+        h2,
+        h3 {
+            margin-top: 0;
         }
 
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
+        label {
+            font-size: 13px;
+            color: #cbd5f5;
         }
 
-        .match-info {
-            font-size: 26px;
+        input,
+        button {
+            margin: 4px 0;
+            padding: 6px 8px;
+            border-radius: 4px;
+            border: 1px solid #4b5563;
+            background: #020617;
+            color: #e5e7eb;
         }
 
-        .match-info span {
-            font-weight: 700;
-        }
-
-        .controls {
-            display: flex;
-            gap: 6px;
+        input[type="file"] {
+            border: none;
+            padding: 0;
         }
 
         button {
             border: none;
             cursor: pointer;
-            padding: 3px 10px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 3px;
-            text-transform: uppercase;
-            background: #222222;
-            color: #ffffff;
+            background: #3b82f6;
         }
 
-        button:hover {
-            background: #333333;
+        button.secondary {
+            background: #6b7280;
+            margin-left: 4px;
         }
 
-        .panel {
-            background: #050505;
+        hr {
+            border-color: #1f2937;
+            margin: 16px 0;
+        }
+
+        .card {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 6px;
+            background: #0b1120;
+            border: 1px solid #1f2937;
+        }
+
+        .card img {
             border-radius: 4px;
-            padding: 6px;
-            border: 1px solid #333333;
+            margin-top: 4px;
         }
 
-        .tables-grid {
-            display: flex;
-            gap: 6px;
-            justify-content: space-between;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 16px;
-        }
-
-        .teams-table {
-            width: 50%;
-        }
-
-        thead {
-            background: #111111;
-        }
-
-        th,
-        td {
-            border-bottom: 1px solid #222222;
-            padding: 2px 3px;
-            text-align: center;
-        }
-
-        th {
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-        }
-
-        tbody tr:nth-child(even) {
-            background: #050505;
-        }
-
-        tbody tr:nth-child(odd) {
-            background: #0a0a0a;
-        }
-
-        .idx {
-            width: 24px;
-            font-size: 15px;
-        }
-
-        .logo-cell {
-            width: 46px;
-        }
-
-        .logo-preview {
-            width: 30px;
-            height: 30px;
-            border-radius: 3px;
-            background: #111111;
-            object-fit: cover;
-            display: block;
-            margin: 0 auto 1px;
-        }
-
-        .logo-input {
-            width: 100%;
-            font-size: 11px;
-        }
-
-        .team-input {
-            width: 70px;
-            font-size: 18px;
-            text-align: left;
-            padding-left: 3px;
-            background: #050505;
-            border: 1px solid #333333;
-            color: #ffffff;
-        }
-
-        .alive-select {
-            width: 48px;
-            font-size: 18px;
-            background: #050505;
-            border: 1px solid #333333;
-            color: #ffffff;
-        }
-
-        .num-input {
-            width: 52px;
-            font-size: 18px;
-            text-align: center;
-            background: #050505;
-            border: 1px solid #333333;
-            color: #ffffff;
-        }
-
-        .readonly {
-            color: #cccccc;
-            font-size: 18px;
-        }
-
-        tfoot td {
-            border-top: 1px solid #222222;
-            padding-top: 4px;
+        .status {
             font-size: 12px;
-            color: #aaaaaa;
+            color: #9ca3af;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 
 <body>
+    <h2>Scoreboard Admin</h2>
+    <p class="status" id="status">Connecting…</p>
 
-    <div class="admin-wrapper">
+    <!-- FORM -->
+    <div>
+        <label>Team Logo:</label><br />
+        <input type="file" id="logoFile" accept="image/*" /><br><br>
 
-        <div class="top-bar">
-            <div class="match-info">
-                MATCH: <span id="match-number">1</span>
-            </div>
-            <div class="controls">
-                <button id="btn-next-match">Next Match</button>
-                <button id="btn-hard-reset">Hard Reset</button>
-            </div>
-        </div>
+        <input type="number" id="slot" placeholder="Slot No" /><br>
+        <input type="text" id="team" placeholder="Team Name" /><br>
+        <input type="number" id="alive" placeholder="Alive" /><br>
+        <input type="number" id="total" placeholder="Total Points" /><br>
+        <input type="number" id="match" placeholder="Matches" /><br>
+        <input type="number" id="position" placeholder="Position / Rank" /><br>
 
-        <div class="panel">
-            <div class="tables-grid">
-                <!-- LEFT 10 TEAMS -->
-                <table class="teams-table">
-                    <thead>
-                        <tr>
-                            <th class="idx">#</th>
-                            <th class="logo-cell">Logo</th>
-                            <th>Team</th>
-                            <th>Alv</th>
-                            <th>Total</th>
-                            <th>Match</th>
-                            <th>Sum</th>
-                        </tr>
-                    </thead>
-                    <tbody id="teams-left">
-                    </tbody>
-                </table>
-
-                <!-- RIGHT 10 TEAMS -->
-                <table class="teams-table">
-                    <thead>
-                        <tr>
-                            <th class="idx">#</th>
-                            <th class="logo-cell">Logo</th>
-                            <th>Team</th>
-                            <th>Alv</th>
-                            <th>Total</th>
-                            <th>Match</th>
-                            <th>Sum</th>
-                        </tr>
-                    </thead>
-                    <tbody id="teams-right">
-                    </tbody>
-                </table>
-            </div>
-
-            <table>
-                <tfoot>
-                    <tr>
-                        <td colspan="7">
-                            All changes auto-save instantly. Overlay updates live from this page via
-                            <code>BroadcastChannel("scoreboardChannel")</code>.
-                        </td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-
+        <button onclick="saveData()" id="saveBtn">Save</button>
+        <button class="secondary" onclick="resetForm()">Clear</button>
     </div>
 
+    <hr>
+
+    <h3>Teams</h3>
+    <div id="list"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const DEFAULT_TEAMS = [
-            "OG", "MDL", "VLT", "REV", "HUN",
-            "K9", "RTX", "ACE", "TX", "XG",
-            "GTX", "STN", "BTR", "DFN", "SOX",
-            "AXL", "ICE", "FLX", "WAR", "NXT"
-        ];
+        // -------- Supabase client --------
+        const db = window.supabase.createClient(
+            "https://csabudilbmjvyhilbekw.supabase.co",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzYWJ1ZGlsYm1qdnloaWxiZWt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0OTE1MzYsImV4cCI6MjA3OTA2NzUzNn0.xUygMCObsAMNZ4OHnG4WHmqpmXnF2O-72iCKKMh---o"
+        );
 
-        const leftBody = document.getElementById("teams-left");
-        const rightBody = document.getElementById("teams-right");
-        const matchEl = document.getElementById("match-number");
-        const btnNext = document.getElementById("btn-next-match");
-        const btnReset = document.getElementById("btn-hard-reset");
+        const statusEl = document.getElementById("status");
+        let editingId = null; // uuid of row being edited
 
-        // ====== LIVE CHANNEL TO OVERLAY ======
-        const channel = new BroadcastChannel("scoreboardChannel");
+        // ---------- Upload logo to Storage ----------
+        async function uploadLogo(file) {
+            if (!file) return null;
 
-        function broadcastScoreboard() {
-            // Send current data to overlay
-            channel.postMessage(data);
-        }
+            const path = Date.now() + "-" + file.name;
 
-        function loadData() {
-            let stored = JSON.parse(localStorage.getItem("scoreboardData") || "null");
-            if (!stored || !Array.isArray(stored) || stored.length === 0) {
-                stored = DEFAULT_TEAMS.map(name => ({
-                    team: name,
-                    alive: 4,
-                    total: 0,
-                    match: 0,
-                    logo: ""
-                }));
+            const { error } = await db.storage.from("logos").upload(path, file);
+            if (error) {
+                console.error("Storage upload error:", error);
+                alert("Logo upload failed: " + error.message);
+                return null;
             }
-            return stored;
+
+            const { data } = db.storage.from("logos").getPublicUrl(path);
+            return data.publicUrl;
         }
 
-        function saveData() {
-            localStorage.setItem("scoreboardData", JSON.stringify(data));
-            localStorage.setItem("scoreboard_updated_at", Date.now().toString());
-            // Also push live update to overlay
-            broadcastScoreboard();
-        }
+        // ---------- Save / Update row ----------
+        async function saveData() {
+            const slotVal = document.getElementById("slot").value;
+            const teamVal = document.getElementById("team").value;
 
-        function loadMatchNumber() {
-            const m = parseInt(localStorage.getItem("matchNumber") || "1", 10);
-            return isNaN(m) ? 1 : m;
-        }
-
-        function saveMatchNumber() {
-            localStorage.setItem("matchNumber", String(matchNumber));
-        }
-
-        let data = loadData();
-        let matchNumber = loadMatchNumber();
-        matchEl.textContent = matchNumber;
-
-        function renderTable() {
-            leftBody.innerHTML = "";
-            rightBody.innerHTML = "";
-
-            const mid = Math.ceil(data.length / 2); // 10 + 10 for 20 teams
-            const leftTeams = data.slice(0, mid);
-            const rightTeams = data.slice(mid);
-
-            leftTeams.forEach((t, idx) => {
-                const globalIndex = idx;
-                const tr = buildRow(t, globalIndex);
-                leftBody.appendChild(tr);
-            });
-
-            rightTeams.forEach((t, idx) => {
-                const globalIndex = idx + mid;
-                const tr = buildRow(t, globalIndex);
-                rightBody.appendChild(tr);
-            });
-        }
-
-        function buildRow(team, index) {
-            const tr = document.createElement("tr");
-
-            // index
-            const tdIdx = document.createElement("td");
-            tdIdx.className = "idx";
-            tdIdx.textContent = index + 1;
-
-            // logo
-            const tdLogo = document.createElement("td");
-            tdLogo.className = "logo-cell";
-            const img = document.createElement("img");
-            img.className = "logo-preview";
-            img.src = team.logo || "";
-            const file = document.createElement("input");
-            file.type = "file";
-            file.accept = "image/*";
-            file.className = "logo-input";
-            file.addEventListener("change", e => handleLogoChange(e, index, img));
-            tdLogo.appendChild(img);
-            tdLogo.appendChild(file);
-
-            // team name
-            const tdTeam = document.createElement("td");
-            const inpTeam = document.createElement("input");
-            inpTeam.type = "text";
-            inpTeam.value = team.team;
-            inpTeam.className = "team-input";
-            inpTeam.addEventListener("input", () => {
-                data[index].team = inpTeam.value.toUpperCase();
-                saveData();
-            });
-            tdTeam.appendChild(inpTeam);
-
-            // alive
-            const tdAlive = document.createElement("td");
-            const selAlive = document.createElement("select");
-            selAlive.className = "alive-select";
-            for (let i = 0; i <= 4; i++) {
-                const opt = document.createElement("option");
-                opt.value = i;
-                opt.textContent = i;
-                if (i === team.alive) opt.selected = true;
-                selAlive.appendChild(opt);
+            if (!slotVal || !teamVal) {
+                alert("Slot and Team Name are required.");
+                return;
             }
-            selAlive.addEventListener("change", () => {
-                data[index].alive = parseInt(selAlive.value, 10);
-                saveData();
-            });
-            tdAlive.appendChild(selAlive);
 
-            // total pts
-            const tdTotal = document.createElement("td");
-            const inpTotal = document.createElement("input");
-            inpTotal.type = "number";
-            inpTotal.className = "num-input";
-            inpTotal.value = team.total;
-            inpTotal.addEventListener("input", () => {
-                data[index].total = parseInt(inpTotal.value || "0", 10);
-                updateRowSum(index);
-                saveData();
-            });
-            tdTotal.appendChild(inpTotal);
+            const file = document.getElementById("logoFile").files[0];
+            let logoUrl = null;
 
-            // match pts
-            const tdMatch = document.createElement("td");
-            const inpMatch = document.createElement("input");
-            inpMatch.type = "number";
-            inpMatch.className = "num-input";
-            inpMatch.value = team.match;
-            inpMatch.addEventListener("input", () => {
-                data[index].match = parseInt(inpMatch.value || "0", 10);
-                updateRowSum(index);
-                saveData();
-            });
-            tdMatch.appendChild(inpMatch);
-
-            // sum
-            const tdSum = document.createElement("td");
-            const spanSum = document.createElement("span");
-            spanSum.className = "readonly";
-            spanSum.id = `sum-${index}`;
-            spanSum.textContent = (team.total + team.match).toString();
-            tdSum.appendChild(spanSum);
-
-            tr.append(tdIdx, tdLogo, tdTeam, tdAlive, tdTotal, tdMatch, tdSum);
-            return tr;
-        }
-
-        function updateRowSum(index) {
-            const span = document.getElementById(`sum-${index}`);
-            if (span) {
-                span.textContent = (data[index].total + data[index].match).toString();
+            if (file) {
+                logoUrl = await uploadLogo(file);
+                if (!logoUrl) return; // upload failed
             }
-        }
 
-        function handleLogoChange(e, index, imgEl) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = ev => {
-                data[index].logo = ev.target.result;
-                imgEl.src = ev.target.result;
-                saveData();
+            const row = {
+                slot: Number(slotVal),
+                team: teamVal,
+                alive: Number(document.getElementById("alive").value || 0),
+                total: Number(document.getElementById("total").value || 0),
+                match: Number(document.getElementById("match").value || 0),
+                position: Number(document.getElementById("position").value || 0),
             };
-            reader.readAsDataURL(file);
+
+            if (logoUrl) row.logo = logoUrl;
+
+            let response;
+            if (editingId) {
+                // UPDATE by uuid id
+                response = await db
+                    .from("scoreboard_teams")
+                    .update(row)
+                    .eq("id", editingId);
+            } else {
+                // INSERT new row (id auto uuid)
+                response = await db.from("scoreboard_teams").insert(row);
+            }
+
+            if (response.error) {
+                console.error("DB ERROR (insert/update):", response.error);
+                alert("DB error: " + response.error.message);
+                return;
+            }
+
+            editingId = null;
+            resetForm();
+            await loadData();
         }
 
-        /* Buttons */
+        function resetForm() {
+            editingId = null;
+            document.getElementById("slot").value = "";
+            document.getElementById("team").value = "";
+            document.getElementById("alive").value = "";
+            document.getElementById("total").value = "";
+            document.getElementById("match").value = "";
+            document.getElementById("position").value = "";
+            document.getElementById("logoFile").value = "";
+            document.getElementById("saveBtn").textContent = "Save";
+        }
 
-        btnReset.addEventListener("click", () => {
-            if (!confirm("Hard reset: set all totals & match points to 0 and alive to 4?")) return;
-            data = data.map(t => ({
-                ...t,
-                alive: 4,
-                total: 0,
-                match: 0
-            }));
-            matchNumber = 1;
-            matchEl.textContent = matchNumber;
-            renderTable();
-            saveData();
-            saveMatchNumber();
-        });
+        // ---------- Load all rows ----------
+        async function loadData() {
+            const { data, error } = await db
+                .from("scoreboard_teams")
+                .select("*")
+                .order("position", { ascending: true });
 
-        btnNext.addEventListener("click", () => {
-            if (!confirm("Next match: add current match points to total, reset match to 0 and alive to 4?")) return;
-            data = data.map(t => ({
-                ...t,
-                total: t.total + t.match,
-                match: 0,
-                alive: 4
-            }));
-            matchNumber += 1;
-            matchEl.textContent = matchNumber;
-            renderTable();
-            saveData();
-            saveMatchNumber();
-        });
+            if (error) {
+                console.error("Load error:", error);
+                statusEl.textContent = "Error loading data: " + error.message;
+                return;
+            }
 
-        /* initial render */
-        renderTable();
-        // Also send initial state to overlay when admin opens
-        broadcastScoreboard();
+            statusEl.textContent = "Connected. Realtime enabled.";
+            const list = document.getElementById("list");
+            list.innerHTML = "";
+
+            data.forEach(row => {
+                list.innerHTML += `
+          <div class="card">
+            <div><strong>${row.position}. ${row.team}</strong> (Slot ${row.slot})</div>
+            ${row.logo ? `<img src="${row.logo}" width="70" alt="logo">` : ""}
+            <div>Alive: ${row.alive} | Total: ${row.total} | Match: ${row.match}</div>
+            <div style="margin-top:6px;">
+              <button onclick="editRow('${row.id}')">Edit</button>
+              <button class="secondary" onclick="removeRow('${row.id}')">Delete</button>
+            </div>
+          </div>
+        `;
+            });
+        }
+
+        // ---------- Edit & Delete ----------
+        async function editRow(id) {
+            const { data, error } = await db
+                .from("scoreboard_teams")
+                .select("*")
+                .eq("id", id)
+                .single();
+
+            if (error) {
+                console.error("Edit fetch error:", error);
+                alert("Error loading row: " + error.message);
+                return;
+            }
+
+            editingId = id;
+            document.getElementById("slot").value = data.slot ?? "";
+            document.getElementById("team").value = data.team ?? "";
+            document.getElementById("alive").value = data.alive ?? "";
+            document.getElementById("total").value = data.total ?? "";
+            document.getElementById("match").value = data.match ?? "";
+            document.getElementById("position").value = data.position ?? "";
+            document.getElementById("saveBtn").textContent = "Update";
+            // logo file can't be pre-filled (browser security)
+        }
+
+        async function removeRow(id) {
+            const { error } = await db
+                .from("scoreboard_teams")
+                .delete()
+                .eq("id", id);
+
+            if (error) {
+                console.error("Delete error:", error);
+                alert("Delete failed: " + error.message);
+                return;
+            }
+
+            await loadData();
+        }
+
+        // ---------- Initial load ----------
+        loadData();
+
+        // ---------- Realtime subscription ----------
+        db.channel("scoreboard_teams_changes")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "scoreboard_teams" },
+                () => {
+                    loadData();
+                }
+            )
+            .subscribe((status) => {
+                if (status === "SUBSCRIBED") {
+                    statusEl.textContent = "Connected. Realtime enabled.";
+                }
+            });
     </script>
 </body>
 
