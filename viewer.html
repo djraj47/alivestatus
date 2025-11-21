@@ -80,8 +80,13 @@
             });
         }
 
+        // Initial load
         updateView();
 
+        // Fast auto-refresh: every 1 second
+        setInterval(updateView, 1000); // change to 500 for even faster
+
+        // Also listen to realtime (extra safety)
         db.channel("scoreboard_teams_live")
             .on(
                 "postgres_changes",
