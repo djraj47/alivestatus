@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Final Standings</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: radial-gradient(circle at top, #111827, #020617 60%);
+            color: #e5e7eb;
+            overflow: hidden;
+        }
+
+        .wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 18px;
+            height: calc(100vh - 40px);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        .title-block h1 {
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            margin-top: 4px;
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            background: rgba(31, 41, 55, .9);
+            border-radius: 999px;
+            font-size: 11px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+        }
+
+        /* podium layout */
+        .podium-row {
+            display: grid;
+            grid-template-columns: 1.1fr 1.3fr 1.1fr;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .podium-card {
+            background: rgba(15, 23, 42, 0.96);
+            border-radius: 14px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            box-shadow: 0 0 22px rgba(0, 0, 0, 0.75);
+            position: relative;
+            min-height: 90px;
+        }
+
+        .podium-card.rank1 {
+            transform: translateY(-6px);
+            border: 1px solid #facc15;
+        }
+
+        .podium-card.rank2 {
+            border: 1px solid #9ca3af;
+        }
+
+        .podium-card.rank3 {
+            border: 1px solid #f97316;
+        }
+
+        .podium-rank-pill {
+            position: absolute;
+            top: 6px;
+            left: 10px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(148, 163, 184, .6);
+        }
+
+        .podium-main {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .podium-logo {
+            width: 42px;
+            height: 42px;
+            overflow: hidden;
+            border-radius: 10px;
+            flex-shrink: 0;
+        }
+
+        .podium-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: transparent !important;
+        }
+
+        .podium-text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .podium-name {
+            font-size: 15px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .podium-slot {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .podium-stats {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+            font-size: 11px;
+        }
+
+        .stat-label {
+            color: #9ca3af;
+        }
+
+        .stat-value {
+            font-weight: 700;
+        }
+
+        .points-pill {
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: #facc15;
+            color: #111827;
+            font-size: 11px;
+            font-weight: 800;
+            align-self: flex-start;
+            margin-top: 2px;
+        }
+
+        /* rest of standings */
+        .bottom-block {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 12px;
+            padding: 10px 14px;
+            box-shadow: 0 0 22px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+        }
+
+        .bottom-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .mini-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #9ca3af;
+        }
+
+        .list {
+            flex: 1;
+            overflow-y: auto;
+            margin-top: 2px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th,
+        td {
+            padding: 4px 3px;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+            vertical-align: middle;
+        }
+
+        th {
+            text-align: left;
+            font-size: 11px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        img.table-logo {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            object-fit: cover;
+            background: transparent !important;
+        }
+
+        .rank-col {
+            width: 34px;
+            text-align: right;
+            padding-right: 6px;
+            color: #9ca3af;
+            font-weight: 700;
+        }
+
+        .slot-col {
+            width: 40px;
+            color: #9ca3af;
+            font-weight: 600;
+        }
+
+        .name-col {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        .points-col {
+            text-align: right;
+            font-weight: 700;
+            color: #facc15;
+        }
+
+        .kills-col {
+            text-align: right;
+            color: #a5b4fc;
+        }
+
+        .alive-col {
+            text-align: center;
+            font-size: 11px;
+            color: #6ee7b7;
+        }
+
+        .dim {
+            opacity: 0.5;
+            color: #6b7280;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="header">
+            <div class="title-block">
+                <h1>Final Standings</h1>
+                <div id="subtitle" class="subtitle"></div>
+            </div>
+            <div class="badge" id="summaryBadge">Loading standings...</div>
+        </div>
+
+        <!-- Podium -->
+        <div class="podium-row" id="podiumRow">
+            <!-- will be filled by JS -->
+        </div>
+
+        <!-- Rest of list -->
+        <div class="bottom-block">
+            <div class="bottom-header">
+                <div class="mini-title">Full leaderboard</div>
+                <div id="totalTeamsLabel" class="subtitle"></div>
+            </div>
+            <div class="list">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="rank-col">#</th>
+                            <th class="slot-col">Slot</th>
+                            <th>Team</th>
+                            <th class="kills-col">Kills</th>
+                            <th class="points-col">Total</th>
+                            <th class="alive-col">Alive</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+        const SUPABASE_URL = "https://mwijanqtgnldcvvgmaft.supabase.co";
+        const SUPABASE_ANON_KEY =
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13aWphbnF0Z25sZGN2dmdtYWZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MzAzNTYsImV4cCI6MjA3OTUwNjM1Nn0.IrK7jc6EvcfBZhfxnvQrspPquN6Pbz_7P-DRdYWnRKM";
+
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const podiumRow = document.getElementById("podiumRow");
+        const tableBody = document.getElementById("tableBody");
+        const subtitleEl = document.getElementById("subtitle");
+        const badgeEl = document.getElementById("summaryBadge");
+        const totalTeamsLabel = document.getElementById("totalTeamsLabel");
+
+        // Use same match meta as admin (localStorage)
+        const matchNumber = localStorage.getItem("matchNumber");
+        const matchName = localStorage.getItem("matchName");
+
+        function updateSubtitle() {
+            let text = "";
+            if (matchNumber) {
+                text += `Match ${matchNumber}`;
+            }
+            if (matchName) {
+                text += (text ? " • " : "") + matchName;
+            }
+            subtitleEl.textContent = text || "Overall tournament standings";
+        }
+        updateSubtitle();
+
+        async function loadStandings() {
+            const { data, error } = await supabase
+                .from("teams")
+                .select("*")
+                .order("total", { ascending: false })
+                .order("score", { ascending: false })
+                .order("slot", { ascending: true });
+
+            if (error) {
+                console.error(error);
+                badgeEl.textContent = "Error loading standings";
+                return;
+            }
+
+            const teams = data || [];
+            renderStandings(teams);
+        }
+
+        function renderStandings(teams) {
+            if (!teams.length) {
+                badgeEl.textContent = "No teams found";
+                return;
+            }
+
+            badgeEl.textContent = `Teams: ${teams.length} • Sorted by Total points`;
+            totalTeamsLabel.textContent = `${teams.length} teams`;
+
+            // Podium: top 3
+            podiumRow.innerHTML = "";
+            const top3 = teams.slice(0, 3);
+            const podiumSlots = [1, 0, 2]; // show 2nd, 1st, 3rd visually like real podium
+
+            for (let i = 0; i < 3; i++) {
+                const idx = podiumSlots[i];
+                const team = top3[idx];
+                const card = document.createElement("div");
+                const rank = idx + 1;
+
+                card.className = "podium-card rank" + rank;
+
+                if (!team) {
+                    // empty slot if less than 3 teams
+                    card.style.opacity = 0.15;
+                    podiumRow.appendChild(card);
+                    continue;
+                }
+
+                const kills = team.score ?? 0;
+                const total = team.total ?? 0;
+                const slot = team.slot ?? "-";
+
+                card.innerHTML = `
+          <div class="podium-rank-pill">#${rank}</div>
+          <div class="podium-main">
+            <div class="podium-logo">
+              ${team.logo ? `<img src="${team.logo}" alt="">` : ""}
+            </div>
+            <div class="podium-text">
+              <div class="podium-name">${team.name || "Team"}</div>
+              <div class="podium-slot">Slot ${slot}</div>
+              <div class="podium-stats">
+                <div><span class="stat-label">Kills:</span> <span class="stat-value">${kills}</span></div>
+              </div>
+              <div class="points-pill">${total} pts</div>
+            </div>
+          </div>
+        `;
+                podiumRow.appendChild(card);
+            }
+
+            // Rest of table
+            tableBody.innerHTML = "";
+            teams.forEach((t, i) => {
+                const tr = document.createElement("tr");
+                const rank = i + 1;
+                const kills = t.score ?? 0;
+                const total = t.total ?? 0;
+                const slot = t.slot ?? "-";
+                const alive = typeof t.alive === "number" ? t.alive : "";
+
+                const isEliminated = alive === 0;
+
+                tr.innerHTML = `
+          <td class="rank-col${isEliminated ? " dim" : ""}">#${rank}</td>
+          <td class="slot-col${isEliminated ? " dim" : ""}">${slot}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="table-logo">
+                ${t.logo ? `<img src="${t.logo}" class="table-logo" alt="">` : ""}
+              </div>
+              <div class="name-col${isEliminated ? " dim" : ""}">${t.name || "Team"}</div>
+            </div>
+          </td>
+          <td class="kills-col${isEliminated ? " dim" : ""}">${kills}</td>
+          <td class="points-col${isEliminated ? " dim" : ""}">${total}</td>
+          <td class="alive-col${isEliminated ? " dim" : ""}">${alive === "" ? "" : alive}</td>
+        `;
+
+                tableBody.appendChild(tr);
+            });
+        }
+
+        loadStandings();
+
+        // Optional: refresh every 10s in case you tweak totals manually
+        setInterval(loadStandings, 10000);
+    </script>
+</body>
+
+</html>
